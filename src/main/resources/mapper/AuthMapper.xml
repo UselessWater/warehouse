@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.AuthMapper">
+
+    <!--根据角色ID添加权限ID-->
+    <insert id="insertAuthIdsByRoleId">
+        INSERT INTO role_auth(role_id, auth_id)
+        <choose>
+            <!-- 正常处理非空集合 -->
+            <when test="authIds != null and !authIds.isEmpty()">
+                VALUES
+                <foreach collection="authIds" item="authId" separator=",">
+                    (#{roleId}, #{authId})
+                </foreach>
+            </when>
+            <!-- 空集合或 null 时生成无效插入条件 -->
+            <otherwise>
+                SELECT NULL,NULL FROM DUAL WHERE 1=0  <!-- MySQL 不插入任何数据 -->
+                <!-- 或使用数据库通用写法：SELECT 1 WHERE 1=0 -->
+            </otherwise>
+        </choose>
+    </insert>
+
+    <!--根据角色Id删除所有权限-->
+    <delete id="deleteAuthByRoleId">
+        DELETE FROM role_auth
+        WHERE role_id = #{roleId}
+    </delete>
+
+    <!--根据用户id查询所有的权限菜单-->
+    <select id="selectAuthByUserId" resultType="auth">
+        SELECT
+            t3.*
+        FROM
+            user_role AS t1,
+            role_auth AS t2,
+            auth_info AS t3
+        WHERE
+            t1.role_id = t2.role_id
+        AND t2.auth_id = t3.auth_id
+        AND t3.auth_state = 1
+        AND t3.auth_type != 3
+        AND t1.user_id = #{userId}
+    </select>
+
+    <!--查询所有权限列表-->
+    <select id="selectAllAuth" resultType="Auth">
+        SELECT * FROM auth_info
+        WHERE auth_type != 3
+    </select>
+
+    <!--根据角色id查询权限id列表-->
+    <select id="selectAuthIdsByRoleId" resultType="java.lang.Integer">
+        SELECT auth_id
+        FROM role_auth
+        WHERE role_id = #{roleId}
+    </select>
+
+</mapper>

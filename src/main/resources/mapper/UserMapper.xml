@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.UserMapper">
+
+    <!--添加用户信息-->
+    <insert id="insertUser">
+        INSERT INTO user_info
+        VALUES (
+                DEFAULT,
+                #{user.userCode},
+                #{user.userName},
+                #{user.userPwd},
+                NULL,
+                0,
+                0,
+                #{user.createBy},
+                now(),
+                NULL,
+                NULL
+               )
+    </insert>
+
+    <!--根据用户id修改用户状态-->
+    <update id="updateStateByUserId">
+        UPDATE user_info
+        SET user_state=#{userState}
+        WHERE user_id=#{userId}
+    </update>
+
+    <!--根据用户id修改is_delete,做逻辑删除-->
+    <update id="updateIsDeleteByUserIds">
+        UPDATE user_info
+        SET is_delete = 1
+        <where>
+            <choose>
+                <!-- 正常处理非空集合 -->
+                <when test="userIdList != null and !userIdList.isEmpty()">
+                    user_id IN
+                    <foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+                        #{userId}
+                    </foreach>
+                </when>
+                <!-- 空集合或 null 时阻止全表更新 -->
+                <otherwise>
+                    1 = 0 <!-- 永假条件，确保不更新任何数据 -->
+                </otherwise>
+            </choose>
+        </where>
+    </update>
+
+    <!--修改用户信息-->
+    <update id="updateUserByUserId">
+        UPDATE user_info
+        SET
+            user_name=#{user.userName},
+            update_by=#{user.updateBy},
+            update_time=now()
+        WHERE user_id=#{user.userId}
+    </update>
+
+    <!--根据用户ID更新密码-->
+    <update id="updatePwd">
+        UPDATE user_info
+        SET user_pwd=#{passwordHash}
+        WHERE user_id=#{userId}
+    </update>
+
+    <!--根据用户id删除用户角色关联信息-->
+    <delete id="deleteUserRoleByUserIds">
+        DELETE FROM user_role
+        <where>
+            <choose>
+                <!-- 正常处理非空集合 -->
+                <when test="userIdList != null and !userIdList.isEmpty()">
+                    user_id IN
+                    <foreach collection="userIdList" item="userId" open="(" separator="," close=")">
+                        #{userId}
+                    </foreach>
+                </when>
+                <!-- 空集合或 null 时阻止删除 -->
+                <otherwise>
+                    1 = 0  <!-- 永假条件，确保不删除任何数据 -->
+                </otherwise>
+            </choose>
+        </where>
+    </delete>
+
+    <!--根据用用户名查询用户信息（userCode）-->
+    <select id="selectUserByCode" resultType="user">
+        SELECT
+            *
+        FROM user_info
+        WHERE user_code=#{userCode} AND is_delete='0';
+    </select>
+
+    <!--根据用户对象条件，动态分页查询总条数-->
+    <select id="selectRowCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM user_info
+        <where>
+            AND is_delete='0'
+            <if test="user.userCode != null and user.userCode != ''">
+                AND user_code like concat('%',#{user.userCode},'%')
+            </if>
+            <if test="user.userType != null and user.userType != ''">
+                AND user_type = #{user.userType}
+            </if>
+            <if test="user.userState != null and user.userState != ''">
+                AND user_state = #{user.userState}
+            </if>
+        </where>
+
+    </select>
+
+    <!--根据用户对象条件，动态分页查询用户列表-->
+    <select id="selectUserListByPage" resultType="user">
+        SELECT
+            t1.*,
+            t2.user_code AS get_code
+        FROM
+            user_info AS t1,
+            user_info AS t2
+        <where>
+            AND t1.create_by = t2.user_id
+            AND t1.is_delete = '0'
+            <if test="user.userCode != null and user.userCode != ''">
+                AND t1.user_code like concat('%',#{user.userCode},'%')
+            </if>
+            <if test="user.userType != null and user.userType != ''">
+                AND t1.user_type = #{user.userType}
+            </if>
+            <if test="user.userState != null and user.userState != ''">
+                AND t1.user_state = #{user.userState}
+            </if>
+        </where>
+        ORDER BY t1.create_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+
+    </select>
+
+</mapper>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.UnitMapper">
+
+    <!--查询所有单位，返回单位列表-->
+    <select id="selectAllUnit" resultType="com.uselesswater.warehouse.beans.Unit">
+        SELECT * FROM unit
+    </select>
+
+</mapper>

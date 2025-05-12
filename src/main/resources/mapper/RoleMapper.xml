@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.RoleMapper">
+
+    <!--添加角色-->
+    <insert id="insertRole">
+        INSERT INTO role
+        VALUES(
+             DEFAULT,
+             #{role.roleName},
+             #{role.roleDesc},
+             #{role.roleCode},
+             0,
+             #{role.createBy},
+             now(),
+             NULL,
+             NULL)
+    </insert>
+
+    <!--跟新角色状态-->
+    <update id="updateRoleState">
+        UPDATE role
+        SET
+            role_state = #{role.roleState}
+        WHERE role_id = #{role.roleId}
+    </update>
+
+   <!--根据角色ID修改角色描述-->
+    <update id="updateRoleByUserId">
+        UPDATE role
+        SET role_desc   = #{role.roleDesc},
+            update_by   = #{role.updateBy},
+            update_time = now()
+        WHERE role_id = #{role.roleId}
+    </update>
+
+    <!--根据角色ID删除角色信息(角色表，删除任务需要同时删除另一张表UserRole关系表中的数据)-->
+    <delete id="deleteRoleByRoleId">
+        DELETE FROM role
+        WHERE role_id = #{roleId}
+    </delete>
+
+    <!--根据角色编码或名称查询角色-->
+    <select id="selectRoleByCodeOrName" resultType="role">
+        SELECT * FROM role WHERE role_code = #{role.roleCode} OR role_name = #{role.roleName}
+    </select>
+
+    <!--查询所有角色信息（已经启用的角色）-->
+    <select id="selectAllRole" resultType="role">
+        SELECT * FROM role WHERE role_state = 1
+    </select>
+
+    <!--根据用户id查询角色信息-->
+    <select id="selectRoleList" resultType="role">
+        SELECT
+            t2.*
+        FROM user_role t1
+        JOIN role t2
+            ON t2.role_id = t1.role_id
+        WHERE t1.user_id = #{userId}
+    </select>
+
+    <!--根据roleName查询roleId-->
+    <select id="selectRoleIdByRoleName" resultType="java.lang.Integer">
+        SELECT role_id
+        FROM role
+        <where>
+            <choose>
+                <!-- 正常处理非空集合 -->
+                <when test="roleChecklist != null and !roleChecklist.isEmpty()">
+                    role_name IN
+                    <foreach collection="roleChecklist" item="roleName" open="(" separator="," close=")">
+                        #{roleName}
+                    </foreach>
+                </when>
+                <!-- 空集合或 null 时阻止查询返回数据 -->
+                <otherwise>
+                    1 = 0  <!-- 永假条件，确保不返回任何数据 -->
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!--动态查询所有角色行数-->
+    <select id="selectAllRoleRows" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM role
+        <where>
+            <if test="role.roleName != null and role.roleName != ''">
+                AND role_name LIKE CONCAT('%',#{role.roleName},'%')
+            </if>
+            <if test="role.roleCode != null and role.roleCode != ''">
+                AND role_code LIKE CONCAT('%',#{role.roleCode},'%')
+            </if>
+            <if test="role.roleState != null and role.roleState != ''">
+                AND role_state = #{role.roleState}
+            </if>
+        </where>
+    </select>
+
+    <!--根据分页信息和角色信息查询所有角色-->
+    <select id="selectAllRoleByPage" resultType="com.uselesswater.warehouse.beans.Role">
+        SELECT
+            t1.*,
+            t2.user_code AS getCode
+        FROM role t1,user_info t2
+        <where>
+            t1.create_by = t2.user_id
+            <if test="role.roleName != null and role.roleName != ''">
+                AND t1.role_name LIKE CONCAT('%',#{role.roleName},'%')
+            </if>
+            <if test="role.roleCode != null and role.roleCode != ''">
+                AND t1.role_code LIKE CONCAT('%',#{role.roleCode},'%')
+            </if>
+            <if test="role.roleState != null and role.roleState != ''">
+                AND t1.role_state = #{role.roleState}
+            </if>
+        </where>
+        ORDER BY t1.create_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+    </select>
+
+</mapper>
+

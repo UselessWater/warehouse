@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.ProductTypeMapper">
+
+    <!--添加商品类型-->
+    <insert id="addProductType">
+        INSERT INTO product_type(type_id, parent_id, type_code, type_name, type_desc)
+        VALUES (DEFAULT,#{parentId},#{typeCode},#{typeName},#{typeDesc})
+    </insert>
+
+    <!--根据商品分类ID（typeId）更新商品信息-->
+    <update id="updateProductType">
+        UPDATE product_type
+        SET type_name = #{productType.typeName}, type_desc = #{productType.typeDesc}
+        WHERE type_id = #{productType.typeId}
+    </update>
+
+    <!--根据typeId删除商品分类，或及子分类-->
+    <delete id="deleteProductType">
+        DELETE FROM product_type WHERE type_id = #{typeId} OR parent_id = #{typeId}
+    </delete>
+
+    <!--查询所有商品类型 列表-->
+    <select id="selectAllProductType" resultType="ProductType">
+        SELECT * FROM product_type
+    </select>
+
+    <!--根据商品编码查询商品信息-->
+    <select id="selectProductTypeByCode" resultType="ProductType">
+        SELECT * FROM product_type WHERE type_code = #{typeCode}
+    </select>
+
+    <!--根据商品类型名称查询商品类型-->
+    <select id="selectProductTypeByName" resultType="com.uselesswater.warehouse.beans.ProductType">
+        SELECT * FROM product_type WHERE type_name = #{typeName}
+    </select>
+
+
+</mapper>

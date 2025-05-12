@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.ProductMapper">
+
+    <!--插入商品信息-->
+    <insert id="insertProduct">
+        INSERT INTO product(
+                            product_id,
+                            store_id,
+                            brand_id,
+                            product_name,
+                            product_num,
+                            product_invent,
+                            type_id,
+                            supply_id,
+                            place_id,
+                            unit_id,
+                            introduce,
+                            up_down_state,
+                            in_price,
+                            sale_price,
+                            mem_price,
+                            create_time,
+                            update_time,
+                            create_by,
+                            update_by,
+                            imgs,
+                            product_date,
+                            supp_date)
+        VALUES (
+                DEFAULT,
+                #{product.storeId},
+                #{product.brandId},
+                #{product.productName},
+                #{product.productNum},
+                #{product.productInvent},
+                #{product.typeId},
+                #{product.supplyId},
+                #{product.placeId},
+                #{product.unitId},
+                #{product.introduce},
+                0,
+                #{product.inPrice},
+                #{product.salePrice},
+                #{product.memPrice},
+                now(),
+                NULL,
+                #{product.createBy},
+                NULL,
+                #{product.imgs},
+                #{product.productDate},
+                #{product.suppDate}
+               )
+    </insert>
+
+    <!--更新商品状态-->
+    <update id="updateProductState">
+        UPDATE product
+        SET up_down_state = #{product.upDownState}
+        WHERE product_id = #{product.productId}
+    </update>
+
+    <!--根据商品ID更新商品信息-->
+    <update id="updateProductByProductId">
+        UPDATE product
+        SET
+            imgs=#{product.imgs},
+            store_id=#{product.storeId},
+            brand_id=#{product.brandId},
+            product_num=#{product.productNum},
+            product_invent=#{product.productInvent},
+            type_id=#{product.typeId},
+            supply_id=#{product.supplyId},
+            place_id=#{product.placeId},
+            unit_id=#{product.unitId},
+            introduce=#{product.introduce},
+            in_price=#{product.inPrice},
+            sale_price=#{product.salePrice},
+            mem_price=#{product.memPrice},
+            product_date=#{product.productDate},
+            supp_date=#{product.suppDate},
+            update_by=#{product.updateBy},
+            update_time=now()
+        WHERE product_id = #{product.productId}
+
+    </update>
+
+    <!--根据产品ID列表删除产品-->
+    <delete id="deleteProductByProductIds">
+        DELETE FROM product
+        WHERE
+        <choose>
+            <when test="productIds != null and !productIds.isEmpty">
+                product_id IN
+                <foreach collection="productIds" item="productId" open="(" separator="," close=")">
+                    #{productId}
+                </foreach>
+            </when>
+            <otherwise>
+                1 = 0
+            </otherwise>
+        </choose>
+    </delete>
+
+    <!--根据产品信息查询产品行数-->
+    <select id="selectProductRowCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+            product t1,
+            brand t2,
+            product_type t3,
+            supply t4,
+            place t5,
+            store t6,
+            unit t7
+        <where>
+            t1.brand_id = t2.brand_id
+        AND t1.type_id = t3.type_id
+        AND t1.supply_id = t4.supply_id
+        AND t1.place_id = t5.place_id
+        AND t1.store_id = t6.store_id
+        AND t1.unit_id = t7.unit_id
+            <if test="productDto.storeId != null">
+                AND t1.store_id = #{productDto.storeId}
+            </if>
+            <if test="productDto.productName !=null and productDto.productName != ''">
+                AND t1.product_name LIKE CONCAT('%',#{productDto.productName},'%')
+            </if>
+            <if test="productDto.brandName !=null and productDto.brandName != ''">
+                AND t2.brand_name LIKE CONCAT('%',#{productDto.brandName},'%')
+
+            </if>
+            <if test="productDto.typeName !=null and productDto.typeName != ''">
+                AND t3.type_name LIKE CONCAT('%',#{productDto.typeName},'%')
+            </if>
+            <if test="productDto.supplyName !=null and productDto.supplyName != ''">
+                AND t4.supply_name LIKE CONCAT('%',#{productDto.supplyName},'%')
+            </if>
+            <if test="productDto.placeName !=null and productDto.placeName != ''">
+                AND t5.place_name LIKE CONCAT('%',#{productDto.placeName},'%')
+            </if>
+            <if test="productDto.storeName !=null and productDto.storeName != ''">
+                AND t6.store_name LIKE CONCAT('%',#{productDto.storeName},'%')
+            </if>
+            <if test="productDto.upDownState !=null and productDto.upDownState != ''">
+                AND t1.up_down_state = #{productDto.upDownState}
+            </if>
+            <if test="productDto.isOverDate !=null and productDto.isOverDate != ''">
+                AND IF(t1.supp_date &lt; now(),'0','1')  = #{productDto.isOverDate}
+            </if>
+        AND t5.is_delete = 0
+        AND t4.is_delete = 0
+        </where>
+    </select>
+
+    <!--根据分页信息和产品信息查询产品列表-->
+    <select id="selectProductListByPage" resultType="com.uselesswater.warehouse.beans.dto.ProductDto">
+        SELECT
+            t1.*,
+            IF(t1.supp_date &lt; now(),'0','1') as is_over_date,
+            t2.brand_name,
+            t3.type_name,
+            t4.supply_name,
+            t5.place_name,
+            t6.store_name,
+            t7.unit_name
+        FROM
+            product t1,
+            brand t2,
+            product_type t3,
+            supply t4,
+            place t5,
+            store t6,
+            unit t7
+        <where>
+                t1.brand_id = t2.brand_id
+            AND t1.type_id = t3.type_id
+            AND t1.supply_id = t4.supply_id
+            AND t1.place_id = t5.place_id
+            AND t1.store_id = t6.store_id
+            AND t1.unit_id = t7.unit_id
+            <if test="productDto.storeId != null">
+                AND t1.store_id = #{productDto.storeId}
+            </if>
+            <if test="productDto.productName !=null and productDto.productName != ''">
+                AND t1.product_name LIKE CONCAT('%',#{productDto.productName},'%')
+            </if>
+            <if test="productDto.brandName !=null and productDto.brandName != ''">
+                AND t2.brand_name LIKE CONCAT('%',#{productDto.brandName},'%')
+
+            </if>
+            <if test="productDto.typeName !=null and productDto.typeName != ''">
+                AND t3.type_name LIKE CONCAT('%',#{productDto.typeName},'%')
+            </if>
+            <if test="productDto.supplyName !=null and productDto.supplyName != ''">
+                AND t4.supply_name LIKE CONCAT('%',#{productDto.supplyName},'%')
+            </if>
+            <if test="productDto.placeName !=null and productDto.placeName != ''">
+                AND t5.place_name LIKE CONCAT('%',#{productDto.placeName},'%')
+            </if>
+            <if test="productDto.storeName !=null and productDto.storeName != ''">
+                AND t6.store_name LIKE CONCAT('%',#{productDto.storeName},'%')
+            </if>
+            <if test="productDto.upDownState !=null and productDto.upDownState != ''">
+                AND t1.up_down_state = #{productDto.upDownState}
+            </if>
+            <if test="productDto.isOverDate !=null and productDto.isOverDate != ''">
+                AND IF(t1.supp_date &lt; now(),'0','1')  = #{productDto.isOverDate}
+            </if>
+            AND t5.is_delete = 0
+            AND t4.is_delete = 0
+        </where>
+        ORDER BY t1.create_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+    </select>
+
+    <!--根据商品型号查询商品信息-->
+    <select id="selectProductByProductNum" resultType="com.uselesswater.warehouse.beans.Product">
+        SELECT * FROM product WHERE product_num = #{productNum}
+    </select>
+
+
+</mapper>

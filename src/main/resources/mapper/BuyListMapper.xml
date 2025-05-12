@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.BuyListMapper">
+
+    <!--插入采购单（添加采购单）-->
+    <insert id="insertBuyList">
+        INSERT INTO buy_list(
+                             buy_id,
+                             product_id,
+                             store_id,
+                             buy_num,
+                             fact_buy_num,
+                             buy_time,
+                             supply_id,
+                             place_id,
+                             buy_user,
+                             phone,
+                             is_in)
+        VALUES (
+                DEFAULT,
+                #{buyList.productId},
+                #{buyList.storeId},
+                #{buyList.buyNum},
+                #{buyList.factBuyNum},
+                now(),
+                #{buyList.supplyId},
+                #{buyList.placeId},
+                #{buyList.buyUser},
+                #{buyList.phone},
+                0
+               )
+    </insert>
+</mapper>

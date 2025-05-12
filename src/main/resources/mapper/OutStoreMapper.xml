@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.OutStoreMapper">
+
+    <!--插入出库信心-->
+    <insert id="insertOutStore">
+        INSERT INTO out_store
+            (
+                              outs_id,
+                              product_id,
+                              store_id,
+                              tally_id,
+                              out_price,
+                              out_num,
+                              create_by,
+                              create_time,
+                              is_out
+            )
+        VALUES(
+               DEFAULT,
+               #{outStore.productId},
+               #{outStore.storeId},
+               #{outStore.tallyId},
+               #{outStore.outPrice},
+               #{outStore.outNum},
+               #{outStore.createBy},
+               now(),
+               0
+              )
+    </insert>
+</mapper>
