@@ -32,4 +32,95 @@
                 0
                )
     </insert>
+
+    <!--修改采购单，值修改预计采购数量、实际采购数量-->
+    <update id="updateBuyList">
+        UPDATE buy_list
+        SET
+            buy_num = #{buyList.buyNum},
+            fact_buy_num = #{buyList.factBuyNum}
+        WHERE buy_id=#{buyList.buyId}
+    </update>
+
+    <!--根据buyId修改采购单入库状态为入库-->
+    <update id="updateBuyListIsInByBuyId">
+            UPDATE buy_list
+            SET
+                is_in = 1
+            WHERE buy_id = #{buyId}
+    </update>
+
+    <!--根据采购单ID删除采购单-->
+    <delete id="deleteBuyListById">
+        DELETE FROM buy_list
+        WHERE buy_id = #{buyId}
+    </delete>
+
+    <!--查询采购单总行数，或者根据条件查询采购单总行数
+    条件：
+        storeId: 1
+        startTime:
+        endTime:
+        productName:
+        buyUser:
+        isIn:
+    -->
+    <select id="selectBuyListRowCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM buy_list t1,product t2
+        <where>
+            t1.product_id = t2.product_id
+            <if test="buyListDto.storeId  != null">
+                and t1.store_id = #{buyListDto.storeId}
+            </if>
+            <if test="buyListDto.productName  != null and buyListDto.productName != ''">
+                and t2.product_name like concat('%',#{buyListDto.productName},'%')
+            </if>
+            <if test="buyListDto.buyUser  != null and buyListDto.buyUser != ''">
+                and t1.buy_user like concat('%',#{buyListDto.buyUser},'%')
+            </if>
+            <if test="buyListDto.isIn != null and buyListDto.isIn != ''">
+                and t1.is_in = #{buyListDto.isIn}
+            </if>
+            <if test="buyListDto.startTime != null">
+                and t1.buy_time &gt;= #{buyListDto.startTime}
+            </if>
+            <if test="buyListDto.endTime != null">
+                and t1.buy_time &lt;= #{buyListDto.endTime}
+            </if>
+        </where>
+    </select>
+
+    <!--分页查询采购单列表-->
+    <select id="selectBuyListByPage" resultType="com.uselesswater.warehouse.beans.dto.BuyListDto">
+        SELECT t1.*,t2.store_name,t3.product_name
+        FROM buy_list AS t1
+        JOIN store AS t2
+        ON t1.store_id = t2.store_id
+        JOIN product AS t3
+        ON t1.product_id = t3.product_id
+        <where>
+            <if test="buyListDto.storeId  != null">
+                and t1.store_id = #{buyListDto.storeId}
+            </if>
+            <if test="buyListDto.productName  != null and buyListDto.productName != ''">
+                and t2.product_name like concat('%',#{buyListDto.productName},'%')
+            </if>
+            <if test="buyListDto.buyUser  != null and buyListDto.buyUser != ''">
+                and t1.buy_user like concat('%',#{buyListDto.buyUser},'%')
+            </if>
+            <if test="buyListDto.isIn != null and buyListDto.isIn != ''">
+                and t1.is_in = #{buyListDto.isIn}
+            </if>
+            <if test="buyListDto.startTime != null">
+                and t1.buy_time &gt;= #{buyListDto.startTime}
+            </if>
+            <if test="buyListDto.endTime != null">
+                and t1.buy_time &lt;= #{buyListDto.endTime}
+            </if>
+        </where>
+        ORDER BY t1.buy_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+    </select>
+
 </mapper>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.InStoreMapper">
+
+    <!--插入入库单-->
+    <insert id="insertInStore">
+        insert into in_store
+        values (
+                null,
+                #{storeId},
+                #{productId},
+                #{inNum},
+                #{createBy},
+                now(),
+                0
+               )
+    </insert>
+
+    <!--更新入库单状态-->
+    <update id="updateInStoreIsIn">
+        UPDATE in_store
+        SET is_in = #{confirmInStoreDto.isIn}
+        WHERE ins_id = #{confirmInStoreDto.insId}
+    </update>
+
+    <!--根据条件查询入库单总行数-->
+    <select id="queryInStoreRowCount" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM in_store AS t1
+        JOIN product t2 ON t1.product_id = t2.product_id
+        <where>
+            <if test="inStoreDto.storeId != null">
+                AND t1.store_id = #{inStoreDto.storeId}
+            </if>
+            <if test="inStoreDto.productName != null and inStoreDto.productName != ''">
+                AND t2.product_name like concat('%',#{inStoreDto.productName},'%')
+            </if>
+            <if test="inStoreDto.startTime != null">
+                AND t1.create_time &gt;= #{inStoreDto.startTime}
+            </if>
+            <if test="inStoreDto.endTime != null">
+                AND t1.create_time &lt;= #{inStoreDto.endTime}
+            </if>
+        </where>
+    </select>
+
+    <!--根据条件分页查询入库单-->
+    <select id="queryInStoreByPage" resultType="com.uselesswater.warehouse.beans.vo.InStoreVo">
+        SELECT
+            t1.ins_id,
+            t3.store_name,
+            t2.product_name,
+            t1.in_num,
+            t2.in_price,
+            t1.create_by,
+            t1.create_time,
+            t4.user_code,
+            t1.is_in
+        FROM in_store AS t1
+        JOIN product AS t2 ON t1.product_id = t2.product_id
+        JOIN store AS t3 ON t1.store_id = t3.store_id
+        JOIN user_info AS t4 ON t1.create_by = t4.user_id
+        <where>
+            <if test="inStoreDto.storeId != null">
+                AND t1.store_id = #{inStoreDto.storeId}
+            </if>
+            <if test="inStoreDto.productName != null and inStoreDto.productName != ''">
+                AND t2.product_name like concat('%',#{inStoreDto.productName},'%')
+            </if>
+            <if test="inStoreDto.startTime != null">
+                AND t1.create_time &gt;= #{inStoreDto.startTime}
+            </if>
+            <if test="inStoreDto.endTime != null">
+                AND t1.create_time &lt;= #{inStoreDto.endTime}
+            </if>
+        </where>
+        ORDER BY t1.create_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+    </select>
+</mapper>

@@ -1,7 +1,10 @@
 package com.uselesswater.warehouse.beans;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
@@ -19,7 +22,8 @@ public class BuyList implements Serializable {
 
     private Integer factBuyNum;
 
-    private Date buyTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime buyTime;
 
     private Integer supplyId;
 

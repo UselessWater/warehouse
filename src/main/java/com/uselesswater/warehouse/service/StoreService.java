@@ -1,5 +1,7 @@
 package com.uselesswater.warehouse.service;
 
+import com.uselesswater.warehouse.beans.dto.InStoreDto;
+import com.uselesswater.warehouse.beans.dto.Page;
 import com.uselesswater.warehouse.beans.dto.Result;
 
 /**
@@ -13,4 +15,6 @@ public interface StoreService{
      * @return 返回自定义结果对象
      */
     Result getAllStore();
+
+
 }
