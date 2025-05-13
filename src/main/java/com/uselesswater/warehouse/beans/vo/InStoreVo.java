@@ -15,6 +15,8 @@ import java.util.Date;
 public class InStoreVo implements Serializable {
     private Integer insId;
 
+    private Integer productId;
+
     private String storeName;
 
     private String productName;

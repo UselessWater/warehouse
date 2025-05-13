@@ -55,6 +55,13 @@
                )
     </insert>
 
+    <!--根据商品ID增加商品库存 -->
+    <insert id="addProductInventByProductId">
+        UPDATE product
+        SET product.product_invent=product.product_invent + #{confirmInStoreDto.inNum}
+        WHERE product.product_id = #{confirmInStoreDto.productId}
+    </insert>
+
     <!--更新商品状态-->
     <update id="updateProductState">
         UPDATE product
@@ -67,6 +74,7 @@
         UPDATE product
         SET
             imgs=#{product.imgs},
+            product_name= #{product.productName},
             store_id=#{product.storeId},
             brand_id=#{product.brandId},
             product_num=#{product.productNum},

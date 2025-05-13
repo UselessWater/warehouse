@@ -18,6 +18,7 @@ public class InStoreDto implements Serializable {
 
     private Integer storeId;
     private String productName;
+    private Integer productId;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate startTime;//和createTime相关计算判断

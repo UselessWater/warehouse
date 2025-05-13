@@ -14,14 +14,14 @@ public interface UserRoleMapper {
      * 移除已经分配了的用户-角色关系
      * @param userId 用户ID
      */
-    void removeAssignedRole(String userId);
+    Integer removeAssignedRole(String userId);
 
     /**
      * 重新添加用户-角色关系，分配角色
      * @param userId 用户ID
      * @param roleId 角色ID
      */
-    void assignRole(@Param("userId") String userId, @Param("roleId") Integer roleId);
+    Integer assignRole(@Param("userId") String userId, @Param("roleId") Integer roleId);
 
     /**
      *  根据角色ID删除用户-角色关系

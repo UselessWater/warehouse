@@ -10,10 +10,12 @@ import com.uselesswater.warehouse.beans.dto.Result;
 import com.uselesswater.warehouse.beans.vo.InStoreVo;
 import com.uselesswater.warehouse.mapper.BuyListMapper;
 import com.uselesswater.warehouse.mapper.InStoreMapper;
+import com.uselesswater.warehouse.mapper.ProductMapper;
 import com.uselesswater.warehouse.service.InStoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -28,10 +30,12 @@ public class InStoreServiceImpl implements InStoreService {
 
     private final InStoreMapper inStoreMapper;
     private final BuyListMapper buyListMapper;
+    private final ProductMapper productMapper;
 
-    public InStoreServiceImpl(InStoreMapper inStoreMapper, BuyListMapper buyListMapper) {
+    public InStoreServiceImpl(InStoreMapper inStoreMapper, BuyListMapper buyListMapper, ProductMapper productMapper) {
         this.inStoreMapper = inStoreMapper;
         this.buyListMapper = buyListMapper;
+        this.productMapper = productMapper;
     }
 
     @Override
@@ -54,23 +58,40 @@ public class InStoreServiceImpl implements InStoreService {
                 if (j > 0) {
                     return Result.ok("生成入库单成功！");
                 }
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return Result.err(Result.CODE_ERR_BUSINESS,"生成入库单失败！");
             }
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return Result.err(Result.CODE_ERR_BUSINESS,"生成入库单失败！");
         } catch (Exception e) {
             log.info("系统错误，生成入库单失败！{}",e.getMessage());
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return Result.err(Result.CODE_ERR_SYS,"系统错误，生成入库单失败！");
         }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result confirmInStore(ConfirmInStoreDto confirmInStoreDto) {
 
         try {
             confirmInStoreDto.setIsIn("1");
             //更新入库表中入库状态
-            Integer row = inStoreMapper.updateInStoreIsIn(confirmInStoreDto);
-            return row > 0 ? Result.ok("确认入库成功！") : Result.err(Result.CODE_ERR_BUSINESS,"确认入库失败！");
+            Integer i = inStoreMapper.updateInStoreIsIn(confirmInStoreDto);
+            if (i > 0) {
+                //修改商品表中的库存数量
+                Integer j = productMapper.addProductInventByProductId(confirmInStoreDto);
+                if (j > 0) {
+                    return Result.ok("确认入库成功！");
+                } else {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return Result.err(Result.CODE_ERR_BUSINESS, "确认入库失败！");
+                }
+            }
+            return Result.err(Result.CODE_ERR_BUSINESS, "确认入库失败！");
+
         } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             log.info("系统错误，确认入库失败！{}",e.getMessage());
             return Result.err(Result.CODE_ERR_SYS, "系统错误，确认入库失败");
         }

@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -91,8 +92,16 @@ public class AuthServiceImpl implements AuthService {
     public Result grantAuth(AssignAuth assignAuth) {
         //根据roleId删除该角色下所有的权限
         Integer row1 = authMapper.deleteAuthByRoleId(assignAuth.getRoleId());
+        if (row1 <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "授权失败！");
+        }
         //根据roleId和authId插入新权限
         Integer row = authMapper.insertAuthIdsByRoleId(assignAuth.getAuthIds(), assignAuth.getRoleId());
+        if (row <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "授权失败！");
+        }
         return Result.ok("授权成功！");
     }
 

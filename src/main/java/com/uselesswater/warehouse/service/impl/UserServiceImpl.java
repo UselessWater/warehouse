@@ -14,6 +14,7 @@ import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -152,12 +153,17 @@ public class UserServiceImpl implements UserService {
     public Result removeUserByUserIds(List<String> userIdList) {
         //删除用户表中的用户信息
         Integer row = userMapper.updateIsDeleteByUserIds(userIdList);
-        //删除用户-角色表中的用户信息
-        userMapper.deleteUserRoleByUserIds(userIdList);
-        if (row > 0) {
-            return Result.ok("删除用户成功！");
+        if (row <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "删除用户失败！");
         }
-        return Result.err(Result.CODE_ERR_BUSINESS, "删除用户失败！");
+        //删除用户-角色表中的用户信息
+        Integer row2 = userMapper.deleteUserRoleByUserIds(userIdList);
+        if (row2 <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "删除用户失败！");
+        }
+        return Result.ok("删除用户成功！");
     }
 
     @Override

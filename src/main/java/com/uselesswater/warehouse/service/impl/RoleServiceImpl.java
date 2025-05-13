@@ -8,12 +8,12 @@ import com.uselesswater.warehouse.mapper.RoleMapper;
 import com.uselesswater.warehouse.mapper.UserRoleMapper;
 import com.uselesswater.warehouse.service.RoleService;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -101,19 +101,25 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @Transactional//开启事务
+    @Transactional(rollbackFor = Exception.class)//开启事务
     @CacheEvict(key = "'all:role'")//清除缓存
     public Result removeRole(Integer roleId) {
         //删除角色表中的信息
         Integer row = roleMapper.deleteRoleByRoleId(roleId);
+        if (row <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "删除角色失败！");
+        }
 
         //删除角色-用户关系表中的信息
-        userRoleMapper.deleteUserRoleByRoleId(roleId);
+        Integer row2 = userRoleMapper.deleteUserRoleByRoleId(roleId);
 
-        if (row > 0) {
-            return Result.ok("删除角色成功!");
+        if (row2 <= 0) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return Result.err(Result.CODE_ERR_BUSINESS, "删除角色失败！");
         }
-        return Result.err(Result.CODE_ERR_BUSINESS, "删除角色失败！");
+
+        return Result.ok("删除角色成功！");
     }
 
     @Override

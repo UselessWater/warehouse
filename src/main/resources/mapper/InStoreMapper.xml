@@ -50,6 +50,7 @@
     <select id="queryInStoreByPage" resultType="com.uselesswater.warehouse.beans.vo.InStoreVo">
         SELECT
             t1.ins_id,
+            t1.product_id,
             t3.store_name,
             t2.product_name,
             t1.in_num,

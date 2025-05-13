@@ -1,6 +1,7 @@
 package com.uselesswater.warehouse.mapper;
 
 import com.uselesswater.warehouse.beans.Product;
+import com.uselesswater.warehouse.beans.dto.ConfirmInStoreDto;
 import com.uselesswater.warehouse.beans.dto.Page;
 import com.uselesswater.warehouse.beans.dto.ProductDto;
 import org.apache.ibatis.annotations.Param;
@@ -63,6 +64,13 @@ public interface ProductMapper{
      * @return 更新后的商品ID
      */
     Integer updateProductByProductId(@Param("product") Product product);
+
+    /**
+     *  根据商品ID增加商品库存
+     * @param confirmInStoreDto 包含商品ID和入库数量
+     * @return 增加后的商品ID
+     */
+    Integer addProductInventByProductId(@Param("confirmInStoreDto")ConfirmInStoreDto confirmInStoreDto);
 }
 
 

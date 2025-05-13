@@ -14,5 +14,7 @@ public class ConfirmInStoreDto implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Integer insId;
+    private Integer productId;
     private String isIn;
+    private Integer inNum;
 }
