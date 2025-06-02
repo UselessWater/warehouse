@@ -229,5 +229,12 @@
         SELECT * FROM product WHERE product_num = #{productNum}
     </select>
 
+    <!--根基商品ID查询商品库存-->
+    <select id="selectProductInventByProductId" resultType="java.lang.Integer">
+        SELECT product_invent
+        FROM product
+        WHERE product_id = #{param1}
+    </select>
+
 
 </mapper>

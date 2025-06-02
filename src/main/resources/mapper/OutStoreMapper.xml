@@ -30,4 +30,72 @@
                0
               )
     </insert>
+
+    <!--修改出库单状态和操作人ID-->
+    <update id="setIsOutIsOutStore">
+        UPDATE out_store
+        SET is_out = '1',tally_id=#{tallyId}
+        WHERE outs_id=#{outsId}
+    </update>
+
+    <!--减商品库存 -->
+    <update id="deProductInvent">
+        UPDATE product
+        SET
+            product_invent = product_invent - #{outNum}
+        WHERE product_id = #{productId}
+    </update>
+
+    <!--分局条件查询出库单总条数totalNum -->
+    <select id="selectTotalNumByPage" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM out_store AS t1
+        JOIN product AS t2 ON t1.product_id = t2.product_id
+        <where>
+            <if test="findOutStoreDto.storeId != null">
+                AND t1.store_id = #{findOutStoreDto.storeId}
+            </if>
+            <if test="findOutStoreDto.productName != null and findOutStoreDto.productName != ''">
+                AND t2.product_name LIKE CONCAT('%',#{findOutStoreDto.productName},'%')
+            </if>
+            <if test="findOutStoreDto.startTime != null">
+                AND t1.create_time &gt;= #{findOutStoreDto.startTime}
+            </if>
+            <if test="findOutStoreDto.endTime != null">
+                AND t1.create_time &lt;= #{findOutStoreDto.endTime}
+            </if>
+            <if test="findOutStoreDto.isOut != null and findOutStoreDto.isOut != ''">
+                AND t1.is_out = #{findOutStoreDto.isOut}
+            </if>
+        </where>
+    </select>
+
+    <!--分页条件查询出库单-->
+    <select id="selectOutStoreListByPage" resultType="com.uselesswater.warehouse.beans.vo.OutStoreVo">
+        SELECT t1.*,t2.product_name,t3.store_name,t4.user_code AS tallyCode,t5.user_code
+        FROM out_store AS t1
+        JOIN product AS t2 ON t1.product_id = t2.product_id
+        JOIN store AS t3 ON t1.store_id = t3.store_id
+        JOIN user_info AS t4 ON t1.tally_id = t4.user_id
+        JOIN user_info AS t5 ON t1.create_by = t5.user_id
+        <where>
+            <if test="findOutStoreDto.storeId != null">
+                AND t1.store_id = #{findOutStoreDto.storeId}
+            </if>
+            <if test="findOutStoreDto.productName != null and findOutStoreDto.productName != ''">
+                AND t2.product_name LIKE CONCAT('%',#{findOutStoreDto.productName},'%')
+            </if>
+            <if test="findOutStoreDto.startTime != null">
+                AND t1.create_time &gt;= #{findOutStoreDto.startTime}
+            </if>
+            <if test="findOutStoreDto.endTime != null">
+                AND t1.create_time &lt;= #{findOutStoreDto.endTime}
+            </if>
+            <if test="findOutStoreDto.isOut != null and findOutStoreDto.isOut != ''">
+                AND t1.is_out = #{findOutStoreDto.isOut}
+            </if>
+        </where>
+        ORDER BY t1.create_time DESC
+        LIMIT #{page.limitIndex},#{page.pageSize}
+    </select>
 </mapper>

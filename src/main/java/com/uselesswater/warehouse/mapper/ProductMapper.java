@@ -71,6 +71,13 @@ public interface ProductMapper{
      * @return 增加后的商品ID
      */
     Integer addProductInventByProductId(@Param("confirmInStoreDto")ConfirmInStoreDto confirmInStoreDto);
+
+    /**
+     *  根据商品ID查询商品库存
+     * @param productId 商品ID
+     * @return 商品库存
+     */
+    Integer selectProductInventByProductId(Integer productId);
 }
 
 

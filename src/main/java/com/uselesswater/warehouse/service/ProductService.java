@@ -48,4 +48,5 @@ public interface ProductService{
      * @return 返回更新结果
      */
     Result updateProduct(Product product);
+
 }

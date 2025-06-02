@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.uselesswater.warehouse.mapper.StatisticsMapper">
+
+    <select id="selectStoreInventGroupByStoreIdAndStoreName" resultType="storeInventVo">
+        SELECT
+            t1.store_id,
+            t1.store_name,
+            ifnull(sum(t2.product_invent),0) AS total_invent
+        FROM store AS t1,product AS t2
+        WHERE t1.store_id = t2.store_id
+        GROUP BY t1.store_id,t1.store_name
+    </select>
+</mapper>

@@ -1,11 +1,9 @@
 package com.uselesswater.warehouse.beans.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * className: OutStoreDto  @date 2025/5/10 23:06  @author UselessWater  @jdk_version 17
@@ -13,7 +11,7 @@ import java.util.Date;
  * @description 出库单实体，前端载体
  */
 @Data
-public class OutStoreDto implements Serializable {
+public class InsertOutStoreDto implements Serializable {
     private Integer outsId;
 
     private Integer productId;

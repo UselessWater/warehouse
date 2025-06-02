@@ -2,7 +2,8 @@ package com.uselesswater.warehouse.service;
 
 
 import com.uselesswater.warehouse.beans.OutStore;
-import com.uselesswater.warehouse.beans.dto.OutStoreDto;
+import com.uselesswater.warehouse.beans.dto.FindOutStoreDto;
+import com.uselesswater.warehouse.beans.dto.InsertOutStoreDto;
 import com.uselesswater.warehouse.beans.dto.Result;
 
 /**
@@ -16,5 +17,19 @@ public interface OutStoreService {
      * @param outStore 出库单对象
      * @return 返回结果
      */
-    Result addOutStore(OutStoreDto outStore);
+    Result addOutStore(InsertOutStoreDto outStore);
+
+    /**
+     * 分页查询出库单列表业务方法
+     * @param findOutStoreDto 封装了查询条件
+     * @return 返回Result结果对象
+     */
+    Result findOutStoreListByPage(FindOutStoreDto findOutStoreDto);
+
+    /**
+     * 确认出库单业务方法
+     * @param outStore 出库单对象,需要用到的outsId、productId、outNum、tallyId
+     * @return 返回Result结果对象
+     */
+    Result outStoreConfirm(OutStore outStore);
 }
